@@ -6,3 +6,4 @@ temp.*
 .env.prod
 .vscode
 __pycache__/*
+venv/

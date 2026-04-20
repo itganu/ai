@@ -4,7 +4,7 @@ import json
 import base64
 import asyncio
 import websockets
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import FastAPI, WebSocket, Request, Query
 from fastapi.responses import HTMLResponse
 from fastapi.websockets import WebSocketDisconnect
 from twilio.rest import Client
@@ -61,14 +61,14 @@ async def index_page():
 
 
 @app.post("/make-call")
-async def make_call(to_phone_number: str):
+async def make_call(to_phone_number: str = Query(..., description="The phone number to call")):
     """Make an outgoing call to the specified phone number."""
     if not to_phone_number:
         return {"error": "Phone number is required"}
     try:
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         call = client.calls.create(
-            url=f"{NGROK_URL}/outgoing-call",
+            url=f"{NGROK_URL}/voice",
             to=to_phone_number,
             from_=TWILIO_PHONE_NUMBER,
         )
@@ -79,7 +79,7 @@ async def make_call(to_phone_number: str):
     return {"call_sid": call.sid}
 
 
-@app.api_route("/outgoing-call", methods=["GET", "POST"])
+@app.api_route("/voice", methods=["GET", "POST"])
 async def handle_outgoing_call(request: Request):
     """Handle outgoing call and return TwiML response to connect to Media Stream."""
     response = VoiceResponse()
